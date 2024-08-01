@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 
+import certifi
+import os
+os.environ['SSL_CERT_FILE'] = certifi.where()
+
 app = Flask(__name__)
 
 # MongoDB connection
