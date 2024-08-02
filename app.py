@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from flask_cors import CORS
 import certifi
 import os
+import bcrypt
 
 
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -31,10 +32,13 @@ def register():
 
     if db.users.find_one({"username": username}):
         return jsonify({"error": "Username already exists"}), 400
+    
+    # Hash the password
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     user_data = {
         'username': username,
-        'password': password
+        'password': hashed_password 
     }
 
     db.users.insert_one(user_data)
@@ -50,10 +54,20 @@ def login():
         return jsonify({"error": "Username and password are required"}), 400
 
     user = db.users.find_one({"username": username})
-    if not user or user['password'] != password:
+    if not user:
         return jsonify({"error": "Invalid username or password"}), 400
 
-    return jsonify({"message": "User signed in successfully"}), 200
+    # Ensure user['password'] is in bytes
+    hashed_password = user['password']
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode('utf-8')
+
+    # Check if the provided password matches the hashed password
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+        return jsonify({"message": "User signed in successfully"}), 200
+    else:
+        return jsonify({"error": "Invalid username or password"}), 400
+    
 
 #Project Endpints
 
