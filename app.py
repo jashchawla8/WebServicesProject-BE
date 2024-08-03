@@ -5,6 +5,9 @@ import certifi
 import os
 import bcrypt
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
@@ -12,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB connection
-client = MongoClient('mongodb+srv://harshsharma2413:K0VAuSWYU7Is4E8u@cluster0.qmgfe2f.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+client = MongoClient(os.getenv("MONGO_DB_URI"))
 db = client['SamosaWebServices']  
 
 @app.route('/')
