@@ -29,21 +29,22 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
         return {"status": 1, "data": "One of the members don\'t exist in the system"}
 
     admin_data = users.get_user(db_object, admin_id)
+    print(admin_data)
 
     project = {
                 "project_id": project_id,
                 "project_name": project_name,
                 "description": description,
-                "users": users.append(admin_id),
+                "users": userId_list.append(admin_id),
                 "hwUtlization": {
                     "set1": 0,
                     "set1": 0
                     },
-                "orgId": admin_data.orgId 
+                "orgId": admin_data["orgId"] 
             }
     
     projects_handle.insert_one(project)
-    return {"status": 0, "data": 'Project was created with id: ' + project_id}
+    return {"status": 0, "data": 'Project was created with id: ' + str(project_id)}
     
 
     

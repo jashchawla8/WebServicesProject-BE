@@ -95,10 +95,10 @@ def create_project():
         return jsonify({"error": "Users list is required"}), 400
 
     result = projects.create_project(db, project_id, name, description, admin_id, user_ids)
-    if result.status == 0:
-        return jsonify({'message': 'Project created with project Id: ' + project_id}), 200
+    if result["status"] == 0:
+        return jsonify({'message': 'Project created with project Id: ' + str(project_id)}), 200
     else: 
-        return jsonify({'error': result.data}), 500
+        return jsonify({'error': result["data"]}), 500
 
 
 if __name__ == '__main__':
