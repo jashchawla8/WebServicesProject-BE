@@ -102,38 +102,29 @@ def login():
     
 #Project Endpints
 
-@app.route('/api/projects', methods=['POST'])
-def create_project():
-    name = request.json.get('name')
-    description = request.json.get('description')
-    project_id = request.json.get('projectID')
 
-
-    if not name or not description or not project_id:
-        return jsonify({"error": "All fields are required"}), 400
-
-    project = {
-        'name': name,
-        'description': description,
-        'projectID': project_id,
-    }
-    db.projects.insert_one(project)
-    return jsonify({'message': 'Project created successfully', 'project_id': project_id}), 201
-
-# Project Login
-@app.route('/api/project-login', methods=['POST'])
-def project_login():
+@app.route('/api/project', methods=['POST'])
+def get_project():
     data = request.json
-    project_id = data.get('projectID')
+    projectId = data.get('projectId')
 
-    if not project_id:
-        return jsonify({"error": "ProjectID is required"}), 400
+    if not projectId:
+        return jsonify({"error": "Project ID is required"}), 400
 
-    project = db.projects.find_one({"projectID": project_id})
+    project = db.projects.find_one({"projectId": projectId})
     if not project:
-        return jsonify({"error": "Invalid projectID"}), 400
+        return jsonify({"error": "Project not found"}), 404
 
-    return jsonify({"message": "Logged in to project successfully", "project": project}), 200
+    response = {
+        "pid": project.get('projectId'),
+        "name": project.get('name'),
+        "dateCreated": project.get('dateCreated'),
+        "hwset1": project.get('hwset1'),
+        "hwset2": project.get('hwset2'),
+        "description": project.get('description'),
+        "members": project.get('members')
+    }
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
