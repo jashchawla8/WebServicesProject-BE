@@ -58,13 +58,85 @@ def get_project_details(db, projectId):
         return {"error": "Project not found"}, 404
 
     response = {
-        "pid": project.get('projectId'),
-        "name": project.get('name'),
+        "projectId": project.get('projectId'),
+        "name": project.get('projectName'),
         "dateCreated": project.get('dateCreated'),
-        "hwset1": project.get('hwset1'),
-        "hwset2": project.get('hwset2'),
+        "hwset1": project.get('hwUtilization')["set1"],
+        "hwset2": project.get('hwUtilization')["set2"],
         "description": project.get('description'),
-        "members": project.get('members')
+        "members": project.get('users')
     }
     return response, 200
+
+
+def dashboard(db, user_id):
+
+    # Fetch the user's organization id
+    user = db.users.find_one({"userId": user_id})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    org_id = user['orgId']
+    user_projects = user['projectId']
+
+    # Fetch all users in the same organization
+    team = list(db.users.find({"orgId": org_id}, {"_id": 0, "userId": 1, "firstName": 1,"lastName":1, "role": 1}))
+
+    # Format team data
+    formatted_team = [{"userid": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
+                      team]
+
+    # Fetch hardware utilization for the organization
+
+    projects = list(db.projects.find({"orgId": org_id, "projectId": {"$in": user_projects}}, {"_id": 0, "projectId": 1, "projectName": 1, "hwUtilization.set1": 1, "hwUtilization.set2": 1}))
+
+
+
+    print(projects)
+
+    total_org_hw1_utilisation = sum(int(project['hwUtilization']['set1']) for project in projects)
+    total_org_hw2_utilisation = sum(int(project['hwUtilization']['set2']) for project in projects)
+
+    # Fetch project details
+
+    project_details = [{
+        "projectId": project['projectId'],
+        "name": project['projectName'],
+        "hwset1": int(project['hwUtilization']['set1']),
+        "hwset2": int(project['hwUtilization']['set2'])
+    } for project in projects]
+
+    response = {
+        "team": formatted_team,
+        "totalOrgHW1Utilisation": total_org_hw1_utilisation,
+        "totalOrgHW2Utilisation": total_org_hw2_utilisation,
+        "projects": project_details
+    }
+
+    return response,200
+
+
+
+def get_project_list(db, user_id):
+    user = db.users.find_one({"userId": user_id})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    org_id = user['orgId']
+    user_projects = user['projectId']
+    projects = list(db.projects.find({"orgId": org_id, "projectId": {"$in": user_projects}}, {"_id": 0, "projectId": 1, "projectName": 1,"hwUtilization.set1": 1, "hwUtilization.set2": 1, "dateCreated": 1}))
+
+    project_details = [{
+        "dateCreated" : project['dateCreated'],
+        "projectId": project['projectId'],
+        "name": project['projectName'],
+        "hwset1": int(project['hwUtilization']['set1']),
+        "hwset2": int(project['hwUtilization']['set2'])
+    } for project in projects]
+
+    response = {"projects" : project_details}
+
+    return response, 200
+
+
 

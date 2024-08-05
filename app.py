@@ -92,6 +92,20 @@ def create_project():
     else: 
         return jsonify({'error': result["data"]}), 500
 
+@app.route('/dashboard', methods=['POST'])
+def dashboard():
+    data = request.json
+    user_id = data.get('userId')
+    response,status = projects.dashboard(db,user_id)
+    return jsonify(response), status
+
+@app.route('/dashboard/project', methods=['POST'])
+def get_project_list():
+    data = request.json
+    user_id = data.get('userId')
+    response, status = projects.get_project_list(db, user_id)
+    return jsonify(response), status
+
 
 if __name__ == '__main__':
     app.run(debug=True)
