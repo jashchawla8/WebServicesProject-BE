@@ -4,7 +4,10 @@ from flask_cors import CORS
 import certifi
 import os
 import bcrypt
+import users
 import projects
+
+
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -28,52 +31,41 @@ def home():
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.json
-    username = data.get('username')
+    userId = data.get('userId')  # Mapping email to userId
     password = data.get('password')
+    firstName = data.get('firstName')
+    lastName = data.get('lastName')
+    operation = data.get('operation')
+    orgId = data.get('orgId')
+    orgName = data.get('orgName')
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+    response, status = users.register_user(db, userId, password, firstName, lastName, operation, orgId, orgName)
+    return jsonify(response), status
 
-    if db.users.find_one({"username": username}):
-        return jsonify({"error": "Username already exists"}), 400
-    
-    # Hash the password
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    user_data = {
-        'username': username,
-        'password': hashed_password 
-    }
-
-    db.users.insert_one(user_data)
-    return jsonify({"message": "User registered successfully"}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
-    username = data.get('username')
+    userId = data.get('userId')
     password = data.get('password')
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+    response, status = users.login_user(db, userId, password)
+    return jsonify(response), status
+    return jsonify(response), status
 
-    user = db.users.find_one({"username": username})
-    if not user:
-        return jsonify({"error": "Invalid username or password"}), 400
+#Project Endpoints
 
-    # Ensure user['password'] is in bytes
-    hashed_password = user['password']
-    if isinstance(hashed_password, str):
-        hashed_password = hashed_password.encode('utf-8')
+@app.route('/api/project', methods=['POST'])
+def get_project():
+    data = request.json
+    projectId = data.get('projectId')
 
-    # Check if the provided password matches the hashed password
-    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-        return jsonify({"message": "User signed in successfully"}), 200
-    else:
-        return jsonify({"error": "Invalid username or password"}), 400
-    
 
-#Project Endpints
+    response, status = projects.get_project_details(db, projectId)
+    return jsonify(response), status
+
+
 @app.route('/api/projects', methods=['POST'])
 def create_project():
     name = request.json.get('name')

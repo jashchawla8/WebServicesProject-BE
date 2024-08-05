@@ -47,5 +47,24 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
     return {"status": 0, "data": 'Project was created with id: ' + str(project_id)}
     
 
-    
-    
+
+
+def get_project_details(db, projectId):
+    if not projectId:
+        return {"error": "Project ID is required"}, 400
+
+    project = db.projects.find_one({"projectId": projectId})
+    if not project:
+        return {"error": "Project not found"}, 404
+
+    response = {
+        "pid": project.get('projectId'),
+        "name": project.get('name'),
+        "dateCreated": project.get('dateCreated'),
+        "hwset1": project.get('hwset1'),
+        "hwset2": project.get('hwset2'),
+        "description": project.get('description'),
+        "members": project.get('members')
+    }
+    return response, 200
+
