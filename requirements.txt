@@ -10,3 +10,4 @@ packaging==24.1
 pymongo==4.8.0
 python-dotenv==1.0.1
 Werkzeug==3.0.3
+flask_cors==3.0.10
