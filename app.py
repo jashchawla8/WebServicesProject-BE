@@ -6,6 +6,7 @@ import os
 import bcrypt
 import users
 import projects
+import hardware
 
 
 
@@ -66,7 +67,7 @@ def get_project():
     return jsonify(response), status
 
 
-@app.route('/api/projects', methods=['POST'])
+@app.route('/api/project/create', methods=['POST'])
 def create_project():
     name = request.json.get('name')
     description = request.json.get('description')
@@ -106,6 +107,28 @@ def get_project_list():
     user_id = data.get('userId')
     response, status = projects.get_project_list(db, user_id)
     return jsonify(response), status
+
+@app.route('/api/project/resources', methods=['POST'])
+def modify_resources():
+    project_id = request.json.get('projectId')
+    qty_set1 = request.json.get('hwset1')
+    qty_set2 = request.json.get('hwset2')
+    if not project_id or not qty_set1 or not qty_set2:
+        return jsonify({'error': 'Missing required parameters'}), 500
+    result = projects.upd_resourceAllocation(db, project_id, qty_set1, qty_set2)
+    if result["status"] == 0:
+        return jsonify({'message': 'Resource allocation updated for project'}), 200
+    else: 
+        return jsonify({'error': result["data"]}), 500
+    
+
+@app.route('/api/hardware', methods=['GET'])
+def get_hwAvailability():
+    result = hardware.get_hwAvailability(db)
+    if result["status"] == 1:
+        return jsonify({'error': result["data"]}), 500
+    
+    return jsonify(result["data"]), 200
 
 
 if __name__ == '__main__':

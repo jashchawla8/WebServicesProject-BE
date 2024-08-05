@@ -2,6 +2,7 @@ from flask import jsonify
 from pymongo import MongoClient
 import users
 from datetime import datetime
+import hardware
 
 # Returns all projects from the projects collection
 def get_projects(db_object):
@@ -141,4 +142,38 @@ def get_project_list(db, user_id):
     return response, 200
 
 
+def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
+    projects_handle = get_projects(db_object)
+    try:
+        project = get_projects(db_object).find_one({"projectId":project_id})
+        if not project:
+            raise Exception("Project not found")
+        
+        cur_utilization = project["hwUtilization"]
+        if set1_qty > cur_utilization["set1"]:
+            result = hardware.update_availability(db_object, "1", set1_qty - cur_utilization["set1"], 0)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+        elif set1_qty < cur_utilization["set1"]:
+            result = hardware.update_availability(db_object, "1", cur_utilization["set1"] - set1_qty, 1)
+            if result["status"] == 1:
+                raise Exception(result["data"])
 
+        if set2_qty > cur_utilization["set2"]:
+            result = hardware.update_availability(db_object, "2", set2_qty - cur_utilization["set2"], 0)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+        elif set2_qty < cur_utilization["set2"]:
+            result = hardware.update_availability(db_object, "2", cur_utilization["set2"] - set2_qty, 1)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+            
+        projects_handle.update_one({"projectId": project["projectId"]}, {"$set":{"hwUtilization": {
+            "set1": set1_qty,
+            "set2": set2_qty
+        }}})
+        return {"status": 0, "data": 'Updated project resources.'}
+
+
+    except Exception as e:
+        return {"status": 1, "data": 'Could not update project resources. Error: ' + str(e)}
