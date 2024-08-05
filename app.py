@@ -74,6 +74,7 @@ def create_project():
     admin_id = request.json.get('userId')
     user_ids = request.json.get('users')
 
+    print("user Ids" + str(user_ids))
 
     if not name:
         return jsonify({"error": "Project Name is required"}), 400
@@ -86,7 +87,7 @@ def create_project():
     elif not user_ids:
         return jsonify({"error": "Users list is required"}), 400
 
-    result = projects.create_project(db, project_id, name, description, admin_id, user_ids)
+    result = projects.create_project(db, str(project_id), name, description, admin_id, user_ids)
     if result["status"] == 0:
         return jsonify({'message': 'Project created with project Id: ' + str(project_id)}), 200
     else: 
