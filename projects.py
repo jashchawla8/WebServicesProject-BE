@@ -1,4 +1,3 @@
-
 from flask import jsonify
 from pymongo import MongoClient
 import users
@@ -49,6 +48,7 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
     
 
 
+
 def get_project_details(db, projectId):
     if not projectId:
         return {"error": "Project ID is required"}, 400
@@ -67,3 +67,4 @@ def get_project_details(db, projectId):
         "members": project.get('members')
     }
     return response, 200
+

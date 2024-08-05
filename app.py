@@ -8,6 +8,7 @@ import users
 import projects
 
 
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -60,8 +61,10 @@ def get_project():
     data = request.json
     projectId = data.get('projectId')
 
+
     response, status = projects.get_project_details(db, projectId)
     return jsonify(response), status
+
 
 @app.route('/api/projects', methods=['POST'])
 def create_project():
@@ -88,6 +91,7 @@ def create_project():
         return jsonify({'message': 'Project created with project Id: ' + str(project_id)}), 200
     else: 
         return jsonify({'error': result["data"]}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
