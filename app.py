@@ -19,7 +19,8 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB connection
-client = MongoClient(os.getenv("MONGO_DB_URI"))
+#client = MongoClient(os.getenv("MONGO_DB_URI"))
+client = MongoClient("mongodb+srv://harshsharma2413:K0VAuSWYU7Is4E8u@cluster0.qmgfe2f.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = client['SamosaWebServices']  
 
 @app.route('/')
