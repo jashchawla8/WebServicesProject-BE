@@ -3,6 +3,7 @@ from pymongo import MongoClient
 import users
 from datetime import datetime
 import hardware
+from bson.objectid import ObjectId
 
 # Returns all projects from the projects collection
 def get_projects(db_object):
@@ -177,3 +178,14 @@ def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
 
     except Exception as e:
         return {"status": 1, "data": 'Could not update project resources. Error: ' + str(e)}
+
+def delete_project(db, project_id):
+    projects_collection = db['projects']
+    try:
+        result = projects_collection.delete_one({'projectId': project_id})
+        if result.deleted_count == 1:
+            return {'message': 'Project deleted successfully'}, 200
+        else:
+            return {'error': 'Project not found'}, 404
+    except Exception as e:
+        return {'error': str(e)}, 500

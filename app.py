@@ -130,6 +130,13 @@ def get_hwAvailability():
     
     return jsonify(result["data"]), 200
 
+@app.route("/api/project/delete", methods=['POST'])
+def delete_project():
+    data = request.get_json()
+    projectId = data.get('projectId')
+    response, status = projects.delete_project(db, projectId)
+    return jsonify(response), status
+
 
 if __name__ == '__main__':
     app.run(debug=True)
