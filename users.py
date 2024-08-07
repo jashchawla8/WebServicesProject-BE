@@ -68,7 +68,7 @@ def login_user(db, userId, password):
     
 
 
-# Returns all users from the users collection
+# Returns handle to the users collection
 def get_users(dbObject):
     return dbObject.users
 
