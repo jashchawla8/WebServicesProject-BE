@@ -26,10 +26,18 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
     
     userId_list.append(admin_id)
     user_jsonlist = []
+    # user_objlist = []
+    user_handle = users.get_users(db_object)
     try:       
         for user_id in userId_list:
             user = users.get_user(db_object, user_id)
-            user_jsonlist.append(user_id)
+            temp_list = []
+            if user["projectId"] is not None:
+                for p_id in user["projectId"]:
+                    temp_list.append(p_id)
+            temp_list.append(project_id)
+            user_handle.update_one({"userId":user["userId"]}, {"$set": {"projectId": temp_list}})
+
     except Exception as e:
         return {"status": 1, "data": "One of the members don\'t exist in the system"}
 
