@@ -181,9 +181,14 @@ def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
 
 def delete_project(db, project_id):
     projects_collection = db['projects']
+    users_collection = db['users']
     try:
         result = projects_collection.delete_one({'projectId': project_id})
         if result.deleted_count == 1:
+            users_collection.update_many(
+                {'projectId': project_id},
+                {'$pull': {'projectId': project_id}}
+            )
             return {'message': 'Project deleted successfully'}, 200
         else:
             return {'error': 'Project not found'}, 404
