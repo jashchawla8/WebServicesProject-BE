@@ -6,6 +6,7 @@ import os
 import bcrypt
 import users
 import projects
+import hardware
 
 
 
@@ -67,7 +68,7 @@ def get_project():
     return jsonify(response), status
 
 
-@app.route('/api/projects', methods=['POST'])
+@app.route('/api/project/create', methods=['POST'])
 def create_project():
     name = request.json.get('name')
     description = request.json.get('description')
@@ -75,6 +76,7 @@ def create_project():
     admin_id = request.json.get('userId')
     user_ids = request.json.get('users')
 
+    print("user Ids" + str(user_ids))
 
     if not name:
         return jsonify({"error": "Project Name is required"}), 400
@@ -87,7 +89,7 @@ def create_project():
     elif not user_ids:
         return jsonify({"error": "Users list is required"}), 400
 
-    result = projects.create_project(db, project_id, name, description, admin_id, user_ids)
+    result = projects.create_project(db, str(project_id), name, description, admin_id, user_ids)
     if result["status"] == 0:
         return jsonify({'message': 'Project created with project Id: ' + str(project_id)}), 200
     else: 
@@ -105,6 +107,35 @@ def get_project_list():
     data = request.json
     user_id = data.get('userId')
     response, status = projects.get_project_list(db, user_id)
+    return jsonify(response), status
+
+@app.route('/api/project/resources', methods=['POST'])
+def modify_resources():
+    project_id = request.json.get('projectId')
+    qty_set1 = request.json.get('hwset1')
+    qty_set2 = request.json.get('hwset2')
+    if not project_id or not qty_set1 or not qty_set2:
+        return jsonify({'error': 'Missing required parameters'}), 500
+    result = projects.upd_resourceAllocation(db, project_id, qty_set1, qty_set2)
+    if result["status"] == 0:
+        return jsonify({'message': 'Resource allocation updated for project'}), 200
+    else: 
+        return jsonify({'error': result["data"]}), 500
+    
+
+@app.route('/api/hardware', methods=['GET'])
+def get_hwAvailability():
+    result = hardware.get_hwAvailability(db)
+    if result["status"] == 1:
+        return jsonify({'error': result["data"]}), 500
+    
+    return jsonify(result["data"]), 200
+
+@app.route("/api/project/delete", methods=['POST'])
+def delete_project():
+    data = request.get_json()
+    projectId = data.get('projectId')
+    response, status = projects.delete_project(db, projectId)
     return jsonify(response), status
 
 

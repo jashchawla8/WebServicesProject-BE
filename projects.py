@@ -1,6 +1,9 @@
 from flask import jsonify
 from pymongo import MongoClient
 import users
+from datetime import datetime
+import hardware
+from bson.objectid import ObjectId
 
 # Returns all projects from the projects collection
 def get_projects(db_object):
@@ -12,35 +15,36 @@ def get_project(db_object, project_id):
         raise Exception("Project not found")
     return project
 
-def create_project(db_object, project_id, project_name, description, admin_id, userId_list:list):
+def create_project(db_object, project_id, project_name, description, admin_id, userId_list):
     
     projects_handle = get_projects(db_object)
     try: 
-        if projects_handle.find_one({"project_id":project_id}):
+        if projects_handle.find_one({"projectId":project_id}):
             raise Exception("Project with this Id, already exists")
     except Exception as e:
         return {"status": 1, "data": "Project with this Id, already exists"}
     
     userId_list.append(admin_id)
+    user_jsonlist = []
     try:       
         for user_id in userId_list:
             user = users.get_user(db_object, user_id)
+            user_jsonlist.append(user_id)
     except Exception as e:
         return {"status": 1, "data": "One of the members don\'t exist in the system"}
 
     admin_data = users.get_user(db_object, admin_id)
-    print(admin_data)
-
     project = {
-                "project_id": project_id,
-                "project_name": project_name,
+                "projectId": project_id,
+                "projectName": project_name,
                 "description": description,
-                "users": userId_list.append(admin_id),
-                "hwUtlization": {
+                "users": user_jsonlist,
+                "hwUtilization": {
                     "set1": 0,
-                    "set1": 0
+                    "set2": 0
                     },
-                "orgId": admin_data["orgId"] 
+                "orgId": admin_data["orgId"],
+                "dateCreated": datetime.now().isoformat()
             }
     
     projects_handle.insert_one(project)
@@ -139,4 +143,49 @@ def get_project_list(db, user_id):
     return response, 200
 
 
+def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
+    projects_handle = get_projects(db_object)
+    try:
+        project = get_projects(db_object).find_one({"projectId":project_id})
+        if not project:
+            raise Exception("Project not found")
+        
+        cur_utilization = project["hwUtilization"]
+        if set1_qty > cur_utilization["set1"]:
+            result = hardware.update_availability(db_object, "1", set1_qty - cur_utilization["set1"], 0)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+        elif set1_qty < cur_utilization["set1"]:
+            result = hardware.update_availability(db_object, "1", cur_utilization["set1"] - set1_qty, 1)
+            if result["status"] == 1:
+                raise Exception(result["data"])
 
+        if set2_qty > cur_utilization["set2"]:
+            result = hardware.update_availability(db_object, "2", set2_qty - cur_utilization["set2"], 0)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+        elif set2_qty < cur_utilization["set2"]:
+            result = hardware.update_availability(db_object, "2", cur_utilization["set2"] - set2_qty, 1)
+            if result["status"] == 1:
+                raise Exception(result["data"])
+            
+        projects_handle.update_one({"projectId": project["projectId"]}, {"$set":{"hwUtilization": {
+            "set1": set1_qty,
+            "set2": set2_qty
+        }}})
+        return {"status": 0, "data": 'Updated project resources.'}
+
+
+    except Exception as e:
+        return {"status": 1, "data": 'Could not update project resources. Error: ' + str(e)}
+
+def delete_project(db, project_id):
+    projects_collection = db['projects']
+    try:
+        result = projects_collection.delete_one({'projectId': project_id})
+        if result.deleted_count == 1:
+            return {'message': 'Project deleted successfully'}, 200
+        else:
+            return {'error': 'Project not found'}, 404
+    except Exception as e:
+        return {'error': str(e)}, 500
