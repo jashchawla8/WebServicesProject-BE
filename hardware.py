@@ -38,8 +38,8 @@ def update_availability(db_object, hw_set, qty, operation):
 def get_hwAvailability(db_object):
     hw_handle = get_Hardware(db_object)
     try:
-        instance1 = hw_handle.find_one({"instanceId":str(os.getenv("HWSET1_INSTANCE_ID"))})
-        instance2 = hw_handle.find_one({"instanceId":str(os.getenv("HWSET2_INSTANCE_ID"))})
+        instance1 = hw_handle.find_one({"instanceId":str(1)})
+        instance2 = hw_handle.find_one({"instanceId":str(2)})
         if not instance1 or not instance2:
            raise Exception("Could not find hardware instance(s)") 
     except Exception as e:
