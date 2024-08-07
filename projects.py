@@ -189,3 +189,11 @@ def delete_project(db, project_id):
             return {'error': 'Project not found'}, 404
     except Exception as e:
         return {'error': str(e)}, 500
+    
+def check_project_does_not_exist(db, projectId):
+    try:
+        project = db.projects.find_one({"projectId": projectId})
+        return project is None
+    except Exception as e:
+        return {'Error occurred: ' + str(e)}
+

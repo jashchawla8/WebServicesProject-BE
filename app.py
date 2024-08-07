@@ -7,6 +7,7 @@ import bcrypt
 import users
 import projects
 import hardware
+import organizations
 
 
 
@@ -137,6 +138,34 @@ def delete_project():
     response, status = projects.delete_project(db, projectId)
     return jsonify(response), status
 
+@app.route('/api/check-projectid', methods=['POST'])
+def check_projectid():
+    data = request.json
+    projectId = data.get('projectId')
 
+    if not projectId:
+        return jsonify({"error": "Project ID is required"}), 400
+
+    project_exists = projects.check_project_does_not_exist(db, projectId)
+    if project_exists:
+        return jsonify({"message": "Project does not exist"}), 500
+    else:
+        return jsonify({"message": "Project exists"}), 200
+    
+@app.route('/api/check-orgid', methods=['POST'])
+def check_orgid():
+    data = request.json
+    orgId = data.get('orgId')
+
+    if not orgId:
+        return jsonify({"error": "Organization ID is required"}), 400
+
+    org_exists = organizations.check_org_does_not_exist(db, orgId)
+    if org_exists:
+        return jsonify({"message": "Organization does not exist"}), 500
+    else:
+        return jsonify({"message": "Organization exists"}), 200
+
+        
 if __name__ == '__main__':
     app.run(debug=True)
