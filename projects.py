@@ -102,10 +102,6 @@ def dashboard(db, user_id):
 
     projects = list(db.projects.find({"orgId": org_id, "projectId": {"$in": user_projects}}, {"_id": 0, "projectId": 1, "projectName": 1, "hwUtilization.set1": 1, "hwUtilization.set2": 1}))
 
-
-
-    print(projects)
-
     total_org_hw1_utilisation = sum(int(project['hwUtilization']['set1']) for project in projects)
     total_org_hw2_utilisation = sum(int(project['hwUtilization']['set2']) for project in projects)
 
@@ -122,7 +118,8 @@ def dashboard(db, user_id):
         "team": formatted_team,
         "totalOrgHW1Utilisation": total_org_hw1_utilisation,
         "totalOrgHW2Utilisation": total_org_hw2_utilisation,
-        "projects": project_details
+        "projects": project_details,
+        "orgId": org_id
     }
 
     return response,200
