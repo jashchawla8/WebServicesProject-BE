@@ -54,7 +54,6 @@ def login():
 
     response, status = users.login_user(db, userId, password)
     return jsonify(response), status
-    return jsonify(response), status
 
 #Project Endpoints
 

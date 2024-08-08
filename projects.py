@@ -69,15 +69,28 @@ def get_project_details(db, projectId):
     if not project:
         return {"error": "Project not found"}, 404
 
+    # Convert dateCreated to the desired format if needed
+    dateCreated = project.get('dateCreated', '')
+    if dateCreated:
+        dateCreated = dateCreated
+    # Fetch all users in the same organization
+    user_array = project.get("users")
+
+    team = list(db.users.find({"userId": {"$in": user_array}}, { "userId": 1, "firstName": 1,"lastName":1, "role": 1}))
+
+    formatted_team = [{"userid": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
+                      team]
+    
     response = {
         "projectId": project.get('projectId'),
         "name": project.get('projectName'),
-        "dateCreated": project.get('dateCreated'),
-        "hwset1": project.get('hwUtilization')["set1"],
-        "hwset2": project.get('hwUtilization')["set2"],
+        "dateCreated": dateCreated,
+        "hwset1": project.get('hwUtilization', {}).get("set1", 0),
+        "hwset2": project.get('hwUtilization', {}).get("set2", 0),
         "description": project.get('description'),
-        "members": project.get('users')
+        "members": formatted_team
     }
+    
     return response, 200
 
 

@@ -53,7 +53,7 @@ def login_user(db, userId, password):
 
     user = db.users.find_one({"userId": userId})
     if not user:
-        return {"error": "Invalid User ID or password"}, 400
+        return {"error": "Invalid User ID or password"}, 500
 
     # Ensure user['password'] is in bytes
     hashed_password = user['password']
