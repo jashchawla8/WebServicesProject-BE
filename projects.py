@@ -64,7 +64,6 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
     return {"status": 0, "data": 'Project was created with id: ' + str(project_id)}
 
 
-
 def get_project_details(db, projectId):
     if not projectId:
         return {"error": "Project ID is required"}, 400
@@ -225,11 +224,10 @@ def check_project_does_not_exist(db, projectId):
         return {'Error occurred: ' + str(e)}
 
 def add_members_to_project(db, projectId, userIds):
-    for user in userIds:
-        result=db.update_one(
-            {"projectId": projectId},
-            {{"userId" : user}}
-        )
+    result = db.projects.update_one(
+        {"projectId": projectId},
+        {"$addToSet": {"users": {"$each": userIds}}}  # Adds all userIds to the users array
+    )
     return result
 
 
