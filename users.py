@@ -79,3 +79,28 @@ def get_user(dbObject, userId):
     if not user:
         raise Exception("user not found!")
     return user
+
+
+def update_user(db, userId, update_data):
+    try:
+        result = db.users.update_one(
+            {"userId": userId},  # Find user by userId
+            {"$set": update_data}  # Update the user's fields
+        )
+        if result.matched_count == 0:
+            return {"status": 1, "data": f"User with ID {userId} not found"}
+        
+        return {"status": 0, "data": f"User with ID {userId} updated successfully"}
+    
+    except Exception as e:
+        return {"status": 1, "data": str(e)}
+    
+def add_project_to_users(db, projectId, userIds):
+    for userId in userIds:
+        result = db.users.update_one(
+            {"userId": userId},
+            {"$addToSet": {"projectId": projectId}}
+        )
+        if result.matched_count == 0:
+            return False, userId  # If any user is not found, return False and the userId
+    return True, None
