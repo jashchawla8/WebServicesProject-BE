@@ -220,3 +220,12 @@ def check_project_does_not_exist(db, projectId):
     except Exception as e:
         return {'Error occurred: ' + str(e)}
 
+def add_members_to_project(db, projectId, userIds):
+    result = db.projects.update_one(
+        {"projectId": projectId},
+        {"$addToSet": {"users": {"$each": userIds}}}
+    )
+    return result
+
+
+

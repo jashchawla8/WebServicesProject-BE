@@ -74,7 +74,7 @@ def create_project():
     project_id = request.json.get('projectId')
     admin_id = request.json.get('userId')
     user_ids = request.json.get('users')
-
+     
     print("user Ids" + str(user_ids))
 
     if not name:
@@ -164,6 +164,29 @@ def check_orgid():
         return jsonify({"message": "Organization does not exist"}), 500
     else:
         return jsonify({"message": "Organization exists"}), 200
+    
+@app.route('/api/add-members', methods=['POST'])
+def add_members_to_project_route():
+    data = request.json
+    userIds = data.get('members')
+    projectId = data.get('projectId')
+
+    if not userIds or not isinstance(userIds, list):
+        return jsonify({"error": "User IDs are required and must be a list"}), 400
+    if not projectId or not isinstance(projectId, str):
+        return jsonify({"error": "Project ID is required and must be a string"}), 400
+
+    # Pass the db connection to the project function
+    result = projects.add_members_to_project(db, projectId, userIds)
+    if result.matched_count == 0:
+        return jsonify({"error": f"Project with ID {projectId} not found"}), 404
+
+    # Pass the db connection to the user function
+    success, failed_userId = users.add_project_to_users(db, projectId, userIds)
+    if not success:
+        return jsonify({"error": f"User with ID {failed_userId} not found"}), 404
+
+    return jsonify({"message": "Users added to project successfully"}), 200
 
         
 if __name__ == '__main__':
