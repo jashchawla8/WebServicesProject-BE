@@ -78,7 +78,7 @@ def get_project_details(db, projectId):
 
     team = list(db.users.find({"userId": {"$in": user_array}}, { "userId": 1, "firstName": 1,"lastName":1, "role": 1}))
 
-    formatted_team = [{"userid": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
+    formatted_team = [{"userId": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
                       team]
     
     response = {
@@ -108,7 +108,7 @@ def dashboard(db, user_id):
     team = list(db.users.find({"orgId": org_id}, {"_id": 0, "userId": 1, "firstName": 1,"lastName":1, "role": 1}))
 
     # Format team data
-    formatted_team = [{"userid": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
+    formatted_team = [{"userId": member["userId"], "name": member["firstName"] +" " + member["lastName"], "role": member["role"]} for member in
                       team]
 
     # Fetch hardware utilization for the organization
