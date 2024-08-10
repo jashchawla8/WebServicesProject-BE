@@ -26,11 +26,16 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
     
     userId_list.append(admin_id)
     user_jsonlist = []
+
+   
+
     user_handle = users.get_users(db_object)
     try:       
         for user_id in userId_list:
             user = users.get_user(db_object, user_id)
+
             user_jsonlist.append(user_id)
+
             temp_list = []
             if user["projectId"] is not None:
                 for p_id in user["projectId"]:
@@ -114,10 +119,6 @@ def dashboard(db, user_id):
 
     projects = list(db.projects.find({"orgId": org_id, "projectId": {"$in": user_projects}}, {"_id": 0, "projectId": 1, "projectName": 1, "hwUtilization.set1": 1, "hwUtilization.set2": 1}))
 
-
-
-    print(projects)
-
     total_org_hw1_utilisation = sum(int(project['hwUtilization']['set1']) for project in projects)
     total_org_hw2_utilisation = sum(int(project['hwUtilization']['set2']) for project in projects)
 
@@ -134,7 +135,8 @@ def dashboard(db, user_id):
         "team": formatted_team,
         "totalOrgHW1Utilisation": total_org_hw1_utilisation,
         "totalOrgHW2Utilisation": total_org_hw2_utilisation,
-        "projects": project_details
+        "projects": project_details,
+        "orgId": org_id
     }
 
     return response,200
@@ -201,9 +203,14 @@ def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
 
 def delete_project(db, project_id):
     projects_collection = db['projects']
+    users_collection = db['users']
     try:
         result = projects_collection.delete_one({'projectId': project_id})
         if result.deleted_count == 1:
+            users_collection.update_many(
+                {'projectId': project_id},
+                {'$pull': {'projectId': project_id}}
+            )
             return {'message': 'Project deleted successfully'}, 200
         else:
             return {'error': 'Project not found'}, 404
