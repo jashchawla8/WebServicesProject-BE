@@ -47,6 +47,8 @@ def get_hwAvailability(db_object):
     
     return {"status": 0, "data":{
         "hwset1": instance1["capacity"] - instance1["utilization"],
-            "hwset2":instance2["capacity"] - instance2["utilization"]
+            "hwset2":instance2["capacity"] - instance2["utilization"],
+            "hwset1Capacity": instance1["capacity"],
+            "hwset2Capacity": instance2["capacity"]
             }
             }

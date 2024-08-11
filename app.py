@@ -117,7 +117,7 @@ def modify_resources():
     project_id = request.json.get('projectId')
     qty_set1 = request.json.get('hwset1')
     qty_set2 = request.json.get('hwset2')
-    if not project_id or not qty_set1 or not qty_set2:
+    if not project_id or qty_set1 is None or qty_set2 is None:
         return jsonify({'error': 'Missing required parameters'}), 500
     result = projects.upd_resourceAllocation(db, project_id, qty_set1, qty_set2)
     if result["status"] == 0:
