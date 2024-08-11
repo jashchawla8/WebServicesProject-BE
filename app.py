@@ -74,6 +74,10 @@ def create_project():
     project_id = request.json.get('projectId')
     admin_id = request.json.get('userId')
     user_ids = request.json.get('users')
+    user_ids.append(admin_id)
+
+
+
      
     print("user Ids" + str(user_ids))
 
@@ -86,7 +90,7 @@ def create_project():
     elif not admin_id:
         return jsonify({"error": "Project Owner is required"}), 400
     elif not user_ids:
-        return jsonify({"error": "Users list is required"}), 400
+       return jsonify({"error": "Users list is required"}), 400
 
     result = projects.create_project(db, str(project_id), name, description, admin_id, user_ids)
     if result["status"] == 0:
