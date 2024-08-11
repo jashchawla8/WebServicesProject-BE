@@ -23,7 +23,7 @@ def create_project(db_object, project_id, project_name, description, admin_id, u
             raise Exception("Project with this Id, already exists")
     except Exception as e:
         return {"status": 1, "data": "Project with this Id, already exists"}
-    
+
     userId_list.append(admin_id)
     user_jsonlist = []
 
@@ -203,9 +203,15 @@ def upd_resourceAllocation(db_object, project_id, set1_qty, set2_qty):
 def delete_project(db, project_id):
     projects_collection = db['projects']
     users_collection = db['users']
+    project = get_projects(db).find_one({"projectId": project_id})
+    project_utilization = project["hwUtilization"]
     try:
+        result_update_1 = hardware.update_availability(db, "1", project_utilization["set1"],
+                                                       1)
+        result_update_2 = hardware.update_availability(db, "2", project_utilization["set2"],
+                                                       1)
         result = projects_collection.delete_one({'projectId': project_id})
-        if result.deleted_count == 1:
+        if result.deleted_count == 1 and result_update_1["status"] == 0 and result_update_2['status'] == 0:
             users_collection.update_many(
                 {'projectId': project_id},
                 {'$pull': {'projectId': project_id}}
